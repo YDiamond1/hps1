@@ -6,7 +6,7 @@
 #include "merge_sort.h"
 
 
-static int get(int *mas, int *pointers, int *sizes, int threads) {
+static int get(const int *mas, int *pointers, const int *sizes, int threads) {
     int j = 0;
     while (pointers[j] == sizes[j + 1] - sizes[j] && j != threads) j++;
 
@@ -16,8 +16,8 @@ static int get(int *mas, int *pointers, int *sizes, int threads) {
     int min = mas[pointers[j]];
     int position = j;
     for (int pointer = 0; pointer < threads; pointer++) {
-        if (pointers[pointer] < sizes[pointer + 1] - sizes[pointer] && min > mas[sizes[pointer] + pointers[pointer]]){
-            min =  mas[sizes[pointer] + pointers[pointer]];
+        if (pointers[pointer] < sizes[pointer + 1] - sizes[pointer] && min > mas[sizes[pointer] + pointers[pointer]]) {
+            min = mas[sizes[pointer] + pointers[pointer]];
             position = pointer;
         }
     }
@@ -26,37 +26,38 @@ static int get(int *mas, int *pointers, int *sizes, int threads) {
     return min;
 }
 
-void mergeSort(int **mas, int size, void (*sort)(int *, int)) {
-    omp_set_dynamic(0);
-#pragma omp parallel shared(mas, size) num_threads(2)
-    {
-        omp_set_num_threads(2);
-        int count_of_threads = omp_get_max_threads();
-        int sizes[count_of_threads + 1];
-        sizes[0] = 0;
-        int mod = size % count_of_threads;
-        for (int j = 1; j <= count_of_threads; j++) {
-            sizes[j] = sizes[j - 1] + size / count_of_threads;
-            if (mod > 0) {
-                mod--;
-                sizes[j]++;
-            }
-        }
-#pragma omp for
-        for (int i = 0; i < count_of_threads; i++) {
-            sort(*mas + sizes[i], sizes[i + 1] - sizes[i]);
-        }
+void mergeSort(int **mas, int size, int threads, void (*sort)(int *, int)) {
 
-        int pointers[count_of_threads];
-        for (int m = 0; m < count_of_threads; m++) {
-            pointers[m] = 0;
-        }
+    int mod, j, i;
+    int sizes[threads + 1];
 
-        int *new_mas = malloc(size * sizeof(int));
-        for (int m = 0; m < size; m++) {
-            new_mas[m] = get(*mas, pointers, sizes, count_of_threads);
+    sizes[0] = 0;
+    mod = size % threads;
+    for (j = 1; j <= threads; j++) {
+        sizes[j] = sizes[j - 1] + size / threads;
+        if (mod > 0) {
+            mod--;
+            sizes[j]++;
         }
-        free(*mas);
-        *mas = new_mas;
     }
+
+#pragma omp parallel firstprivate(sort, sizes) private(i) shared(mas, size, threads) num_threads(threads) default(none)
+    {
+        printf("threads: %i\n", omp_get_num_threads());
+        #pragma omp for
+        for (i = 0; i < threads; i++)
+            sort(*mas + sizes[i], sizes[i + 1] - sizes[i]);
+    }
+
+    int pointers[threads];
+    for (int m = 0; m < threads; m++) {
+        pointers[m] = 0;
+    }
+
+    int *new_mas = malloc(size * sizeof(int));
+    for (int m = 0; m < size; m++) {
+        new_mas[m] = get(*mas, pointers, sizes, threads);
+    }
+    free(*mas);
+    *mas = new_mas;
 }

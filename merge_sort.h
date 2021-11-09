@@ -6,6 +6,6 @@
 #define LAB1_MERGE_SORT_H
 #include <omp.h>
 #include <malloc.h>
-void mergeSort(int **mas, int size, void (*sort)(int*, int));
+void mergeSort(int **mas, int size, int threads, void (*sort)(int*, int));
 
 #endif //LAB1_MERGE_SORT_H

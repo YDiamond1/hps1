@@ -6,12 +6,13 @@
 #define LAB1_ALG_SMOOTH_H
 
 #include <stddef.h>
+#include <stdint-gcc.h>
 #include "../list/list.h"
 /* Type to sort (null-terminated string literals in this case) */
-typedef const int* value_t;
+typedef int sorteddatatype;
 
-
-void smooth_sort(value_t *mas, size_t size);
+void smooth_sort (sorteddatatype A[],       // Array to be sorted
+                 int num);
 
 
 #endif //LAB1_ALG_SMOOTH_H

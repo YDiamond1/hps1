@@ -4,6 +4,7 @@ project(lab1 C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(lab1 main.c algs/alg_smooth.c algs/alg_smooth.h list/list.c list/list.h algs/algs_shell.c algs/algs_shell.h merge_sort.c merge_sort.h)
+add_executable(shell parallel_shell.c algs/algs_shell.c algs/algs_shell.h)
 
 find_package(OpenMP)
 if(OpenMP_FOUND)
